@@ -1,18 +1,8 @@
-
 #include <GLFW/glfw3.h>
-#include <stdio.h>
-
-void error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Error: %s\n", description);
-}
 
 int main(void)
 {
-    printf("progarm initialized\n");
     GLFWwindow* window;
-
-    glfwSetErrorCallback(error_callback);
 
     /* Initialize the library */
     if (!glfwInit())
