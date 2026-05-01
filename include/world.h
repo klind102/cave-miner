@@ -1,0 +1,2 @@
+void initWorld();
+void drawWorld();

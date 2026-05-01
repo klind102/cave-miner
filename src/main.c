@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <stdio.h>
+#include "world.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -34,9 +35,11 @@ int main(void)
         glfwTerminate();
         return -1;
     }
-
     glViewport(0, 0, 640, 480);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glEnable(GL_DEBUG_OUTPUT);
+
+    initWorld();
 
     while (!glfwWindowShouldClose(window))
     {
@@ -45,7 +48,9 @@ int main(void)
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        
+
+        drawWorld();
+
         glfwPollEvents();
         glfwSwapBuffers(window);
     }

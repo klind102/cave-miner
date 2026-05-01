@@ -1,0 +1,1 @@
+const char *LoadShaderSource(const char *filePath);
