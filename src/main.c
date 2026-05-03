@@ -20,7 +20,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow *window = glfwCreateWindow(640, 480, "Cave Miner", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(640, 640, "Cave Miner", NULL, NULL);
     if (window == NULL)
     {
         printf("GLFW failed to create a window\n");
@@ -35,7 +35,7 @@ int main(void)
         glfwTerminate();
         return -1;
     }
-    glViewport(0, 0, 640, 480);
+    glViewport(0, 0, 640, 640);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glEnable(GL_DEBUG_OUTPUT);
 
@@ -49,6 +49,7 @@ int main(void)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        SimulateWorld();
         drawWorld();
 
         glfwPollEvents();
