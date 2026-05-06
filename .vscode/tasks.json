@@ -8,6 +8,8 @@
       "args": [
         "-g",
         "-std=c11",
+        "-Wall",
+        "-Werror",
         "-I${workspaceFolder}\\include",
         "-L${workspaceFolder}\\lib",
         "${workspaceFolder}\\src\\*.c",

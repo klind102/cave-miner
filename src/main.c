@@ -1,7 +1,9 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+
 #include <stdio.h>
+
 #include "world.h"
 #include "worldEditor.h"
 
@@ -11,9 +13,6 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 }
 
 
-double timeBuffer[]
-double averageTime = 0;
-int i = 0;
 
 int main(void)
 {
