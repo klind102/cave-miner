@@ -3,14 +3,14 @@
 #include <glad/glad.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "world.h"
 #include "utils.h"
 #include "materials.h"
 
 unsigned int vertexArray, shaderProgram, texture;
 
-#define WORLD_WIDTH 100
-#define WORLD_HEIGHT 100
 unsigned char worldData[WORLD_WIDTH * WORLD_HEIGHT];
+int updateOrder[WORLD_WIDTH * WORLD_HEIGHT];
 
 #define cell(x, y) worldData[x + y * WORLD_WIDTH]
 
@@ -89,19 +89,28 @@ void initWorld()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glGenerateMipmap(GL_TEXTURE_2D);
+
+  for (int i = 0; i < WORLD_WIDTH * WORLD_HEIGHT; i++)
+    updateOrder[i] = i;
+
+  for (int i = WORLD_WIDTH * WORLD_HEIGHT - 1; i > 0; i--)
+  {
+    int j = rand() % (i + 1);
+    int tmp = updateOrder[i];
+    updateOrder[i] = updateOrder[j];
+    updateOrder[j] = tmp;
+  }
 };
 
 void SimulateWorld()
 {
-  int rx = WORLD_WIDTH / 2;
-  int ry = WORLD_HEIGHT / 2;
+  int rx = rand();
+  int ry = rand();
 
-  cell(rx, ry) = SAND;
-
-  for (int i = 0; i < 1000; i++)
+  for (int i = 0; i < WORLD_WIDTH * WORLD_HEIGHT; i++)
   {
-    int x = rand() % WORLD_WIDTH;
-    int y = rand() % WORLD_HEIGHT;
+    int x = (updateOrder[i] + rx) % WORLD_WIDTH;
+    int y = ((updateOrder[i] + ry) / WORLD_WIDTH) % WORLD_HEIGHT;
     materialMove(x, y, WORLD_WIDTH, WORLD_HEIGHT, worldData);
   }
 
@@ -116,4 +125,19 @@ void drawWorld()
   glBindTexture(GL_TEXTURE_2D, texture);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
+}
+
+unsigned char *getWorldData()
+{
+  return worldData;
+}
+
+int getWorldWidth()
+{
+  return WORLD_WIDTH;
+}
+
+int getWorldHeight()
+{
+  return WORLD_HEIGHT;
 }

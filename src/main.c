@@ -3,11 +3,17 @@
 #include <glad/glad.h>
 #include <stdio.h>
 #include "world.h"
+#include "worldEditor.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
+
+
+double timeBuffer[]
+double averageTime = 0;
+int i = 0;
 
 int main(void)
 {
@@ -49,7 +55,13 @@ int main(void)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+        {
+            EditorPaint(window);
+        }
+
         SimulateWorld();
+
         drawWorld();
 
         glfwPollEvents();
