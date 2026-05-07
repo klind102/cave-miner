@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "world.h"
-#include "utils.h"
 #include "materials.h"
 
 unsigned int vertexArray, shaderProgram, texture;
@@ -141,3 +140,5 @@ int getWorldHeight()
 {
   return WORLD_HEIGHT;
 }
+
+#undef cell

@@ -24,3 +24,5 @@ void EditorPaint(GLFWwindow *window)
       getWorldData()[worldX + worldY * WORLD_WIDTH] = SAND;
     }
 }
+
+#undef clamp

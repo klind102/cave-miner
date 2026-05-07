@@ -7,6 +7,12 @@
 #include "world.h"
 #include "worldEditor.h"
 
+// Unified Build Includes
+#include "utils.c"
+#include "materials.c"
+#include "world.c"
+#include "worldEditor.c"
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);

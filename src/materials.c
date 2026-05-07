@@ -97,3 +97,13 @@ void materialMove(int x, int y, int width, int height, unsigned char *world)
     cell(x + dx, y + dy) = temp;
   }
 }
+
+#undef UP
+#undef DOWN
+#undef LEFT_RIGHT
+#undef UP_DIAG
+#undef DOWN_DIAG
+#undef MAT_AIR
+#undef MAT_SAND
+#undef MAT_STONE
+#undef cell

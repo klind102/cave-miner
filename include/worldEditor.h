@@ -1,7 +1,4 @@
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
+#ifndef WORLD_EDITOR_H
+#define WORLD_EDITOR_H
 #define BRUSH_SIZE 20
-
-void EditorPaint(GLFWwindow *window);
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+#endif
