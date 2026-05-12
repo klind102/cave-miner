@@ -8,6 +8,7 @@
 #include "worldEditor.h"
 
 // Unified Build Includes
+#include "player.c"
 #include "utils.c"
 #include "materials.c"
 #include "world.c"
@@ -17,8 +18,6 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
-
-
 
 int main(void)
 {
@@ -50,29 +49,40 @@ int main(void)
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glEnable(GL_DEBUG_OUTPUT);
 
-    initWorld();
+    world_init();
+
+    Chunk chunk = world_genChunk();
+
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
 
     while (!glfwWindowShouldClose(window))
     {
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, GLFW_TRUE);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        updatePlayer(window, deltaTime);
+
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-        {
-            EditorPaint(window);
-        }
+            worldEditor_paint(window, chunk.data);
+        
 
-        SimulateWorld();
+        world_simulateChunk(&chunk);
 
-        drawWorld();
+        world_drawChunk(&chunk, camera);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
 
     glfwTerminate();
+
     return 0;
 }

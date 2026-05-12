@@ -3,17 +3,31 @@
 #include <glad/glad.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "world.h"
-#include "materials.h"
+#include <linmath.h>
+#include <world.h>
+#include <materials.h>
+
+#define cell(x, y) worldData[x + y * CHUNK_WIDTH]
 
 unsigned int vertexArray, shaderProgram, texture;
+int updateOrder[CHUNK_WIDTH * Chunk_HEIGHT];
 
-unsigned char worldData[WORLD_WIDTH * WORLD_HEIGHT];
-int updateOrder[WORLD_WIDTH * WORLD_HEIGHT];
+Chunk world_genChunk()
+{
+  Chunk chunk;
 
-#define cell(x, y) worldData[x + y * WORLD_WIDTH]
+  for (int x = 0; x < CHUNK_WIDTH; x++)
+    for (int y = 0; y < Chunk_HEIGHT; y++)
+      if ((x | y) == 0 || x == CHUNK_WIDTH || y == Chunk_HEIGHT)
+      if (x == 0 || x == CHUNK_WIDTH - 1 || y == 0 || y == Chunk_HEIGHT - 1)
+        chunk.data[x + y * CHUNK_WIDTH] = STONE;
+      else
+        chunk.data[x + y * CHUNK_WIDTH] = AIR;
 
-void initWorld()
+  return chunk;
+}
+
+void world_init()
 {
   const float vertices[] = {-1, -1, -1, 1, 1, 1, 1, -1};
   const unsigned int indices[] = {0, 1, 2, 0, 2, 3};
@@ -36,9 +50,6 @@ void initWorld()
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
-
-  // glDeleteBuffers(1, &vertexBuffer);
-  // glDeleteBuffers(1, &indexBuffer);
 
   const char *vertexShaderSource = LoadShaderSource("assets/world-vert-shader.vert");
   const char *fragmentShaderSource = LoadShaderSource("assets/world-frag-shader.frag");
@@ -71,28 +82,15 @@ void initWorld()
   free((void *)fragmentShaderSource);
 
   glGenTextures(1, &texture);
-
-  for (int x = 0; x < WORLD_WIDTH; x++)
-  {
-    for (int y = 0; y < WORLD_HEIGHT; y++)
-    {
-      if (x == WORLD_WIDTH - 1 || y == WORLD_HEIGHT - 1 || x == 0 || y == 0)
-        cell(x, y) = STONE;
-      else
-        cell(x, y) = AIR;
-    }
-  }
-
   glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, WORLD_WIDTH, WORLD_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, worldData);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glGenerateMipmap(GL_TEXTURE_2D);
 
-  for (int i = 0; i < WORLD_WIDTH * WORLD_HEIGHT; i++)
+  for (int i = 0; i < CHUNK_WIDTH * Chunk_HEIGHT; i++)
     updateOrder[i] = i;
 
-  for (int i = WORLD_WIDTH * WORLD_HEIGHT - 1; i > 0; i--)
+  for (int i = CHUNK_WIDTH * Chunk_HEIGHT - 1; i > 0; i--)
   {
     int j = rand() % (i + 1);
     int tmp = updateOrder[i];
@@ -101,44 +99,36 @@ void initWorld()
   }
 };
 
-void SimulateWorld()
+void world_simulateChunk(Chunk *chunk)
 {
   int rx = rand();
   int ry = rand();
 
-  for (int i = 0; i < WORLD_WIDTH * WORLD_HEIGHT; i++)
+  for (int i = 0; i < CHUNK_WIDTH * Chunk_HEIGHT; i++)
   {
-    int x = (updateOrder[i] + rx) % WORLD_WIDTH;
-    int y = ((updateOrder[i] + ry) / WORLD_WIDTH) % WORLD_HEIGHT;
-    materialMove(x, y, WORLD_WIDTH, WORLD_HEIGHT, worldData);
+    int x = (updateOrder[i] + rx) % CHUNK_WIDTH;
+    int y = ((updateOrder[i] + ry) / CHUNK_WIDTH) % Chunk_HEIGHT;
+    int idx = updateOrder[i];
+    int x = idx % CHUNK_WIDTH;
+    int y = idx / CHUNK_WIDTH;
+    materialMove(x, y,  chunk->data);
   }
 
   glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, WORLD_WIDTH, WORLD_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, worldData);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, CHUNK_WIDTH, Chunk_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
+  // Use TexSubImage2D for updating existing textures to avoid re-allocation
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, CHUNK_WIDTH, Chunk_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
 };
 
-void drawWorld()
+void world_drawChunk(Chunk *chunk, mat4x4 camera)
 {
   glUseProgram(shaderProgram);
+  glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "camera"), 1, GL_FALSE, (float *)camera);
+
   glBindVertexArray(vertexArray);
   glBindTexture(GL_TEXTURE_2D, texture);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
-}
-
-unsigned char *getWorldData()
-{
-  return worldData;
-}
-
-int getWorldWidth()
-{
-  return WORLD_WIDTH;
-}
-
-int getWorldHeight()
-{
-  return WORLD_HEIGHT;
 }
 
 #undef cell

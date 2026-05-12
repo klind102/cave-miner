@@ -2,12 +2,11 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <materials.h>
 #include <worldEditor.h>
 #include <world.h>
 
-#define clamp(x, a, b) ((x) < (a) ? (a) : ((x) > (b) ? (b) : (x)))
-void EditorPaint(GLFWwindow *window)
+#define cell(x, y) chunkData[(x) + (y) * CHUNK_WIDTH]
+void worldEditor_paint(GLFWwindow *window, unsigned char *chunkData)
 {
 
   double screenX, screenY;
@@ -18,11 +17,13 @@ void EditorPaint(GLFWwindow *window)
   for (int i = 0; i < BRUSH_SIZE; i++)
     for (int j = 0; j < BRUSH_SIZE; j++)
     {
-      int worldX = clamp((screenX / windowWidth * WORLD_WIDTH) + i, 1, WORLD_WIDTH - 2);
-      int worldY = clamp(((1 - (screenY / windowHeight)) * WORLD_HEIGHT) + j, 1, WORLD_HEIGHT - 2);
+      int worldX = clamp((screenX / windowWidth * CHUNK_WIDTH) + i, 1, CHUNK_WIDTH - 2);
+      int worldY = clamp(((1 - (screenY / windowHeight)) * Chunk_HEIGHT) + j, 1, Chunk_HEIGHT - 2);
 
-      getWorldData()[worldX + worldY * WORLD_WIDTH] = SAND;
+      cell(worldX, worldY) = SAND;
     }
 }
 
-#undef clamp
+
+
+#undef cell

@@ -31,3 +31,4 @@ const char *LoadShaderSource(const char *filePath)
    buffer[bytesRead] = '\0';
    return buffer;
 }
+
