@@ -49,6 +49,8 @@ int main(void)
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glEnable(GL_DEBUG_OUTPUT);
 
+    utils_init();
+
     world_init();
 
     Chunk *chunk = world_genChunk();
@@ -85,7 +87,11 @@ int main(void)
 
     free(chunk);
     free(player);
-    
+
+    utils_freeAll();
+
+    world_freeAll();
+
     glfwTerminate();
 
     return 0;

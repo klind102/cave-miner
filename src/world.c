@@ -6,10 +6,11 @@
 #include <linmath.h>
 #include <world.h>
 #include <materials.h>
+#include <utils.h>
 
 
 
-unsigned int world_chunkSpriteVAO, shaderProgram;
+unsigned int shaderProgram;
 unsigned int texture;
 
 
@@ -31,28 +32,6 @@ Chunk* world_genChunk()
 
 void world_init()
 {
-  const float vertices[] = {-1, -1, -1, 1, 1, 1, 1, -1};
-  const unsigned int indices[] = {0, 1, 2, 0, 2, 3};
-
-  unsigned int vertexBuffer, indexBuffer;
-
-  glGenVertexArrays(1, &world_chunkSpriteVAO);
-  glBindVertexArray(world_chunkSpriteVAO);
-
-  glGenBuffers(1, &vertexBuffer);
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  glGenBuffers(1, &indexBuffer);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
-  glEnableVertexAttribArray(0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindVertexArray(0);
-
   const char *vertexShaderSource = LoadShaderSource("assets/world-vert-shader.vert");
   const char *fragmentShaderSource = LoadShaderSource("assets/world-frag-shader.frag");
 
@@ -125,9 +104,14 @@ void world_drawChunk(Chunk *chunk, mat4x4 camera)
   glUseProgram(shaderProgram);
   glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "camera"), 1, GL_FALSE, (float *)camera);
 
-  glBindVertexArray(world_chunkSpriteVAO);
+  glBindVertexArray(UTIL_SPRITE_VAO);
   glBindTexture(GL_TEXTURE_3D, texture);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
+}
+
+void world_freeAll(){
+  glDeleteTextures(1, &texture);
+  glDeleteProgram(shaderProgram);
 }
 
