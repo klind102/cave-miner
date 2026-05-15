@@ -7,7 +7,7 @@
 in vec2 uv;
 out vec4 fragColor;
 
-uniform sampler2D tex;
+uniform sampler3D tex;
 
 float hash21(uvec2 p) {
   uint n = p.x + 1920U * p.y + (1920U * 1080U);
@@ -17,17 +17,20 @@ float hash21(uvec2 p) {
 }
 
 void main() {
-  int material = int(texture(tex, uv).r * 255.0);
+
+  vec3 texCoords = vec3(uv, 0.0);
+
+  int material = int(texture(tex, texCoords).r * 255.0);
 
   switch(material) {
     case AIR:
       fragColor = vec4(0.0, 0.0, 0.0, 1.0);
       return;
     case SAND:
-      fragColor = mix(vec4(1.0, 1.0, 0.0, 1.0), vec4(0.5, 0.5, 0.0, 1.0), hash21(uvec2(uv * textureSize(tex, 0))));
+      fragColor = mix(vec4(1.0, 1.0, 0.0, 1.0), vec4(0.5, 0.5, 0.0, 1.0), hash21(uvec2(uv * textureSize(tex, 0).xy)));
       return;
     case STONE:
-      fragColor = mix(vec4(0.75, 0.75, 0.75, 1.0), vec4(0.5, 0.5, 0.5, 1.0), hash21(uvec2(uv * textureSize(tex, 0))));
+      fragColor = mix(vec4(0.75, 0.75, 0.75, 1.0), vec4(0.5, 0.5, 0.5, 1.0), hash21(uvec2(uv * textureSize(tex, 0).xy)));
       return;
     default:
       fragColor = vec4(0.0, 0.0, 0.0, 1.0);

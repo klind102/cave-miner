@@ -51,7 +51,9 @@ int main(void)
 
     world_init();
 
-    Chunk chunk = world_genChunk();
+    Chunk *chunk = world_genChunk();
+
+    Player *player = player_init();
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
@@ -68,20 +70,22 @@ int main(void)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        updatePlayer(window, deltaTime);
+        player_updateCamera(window, player, deltaTime);
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-            worldEditor_paint(window, chunk.data);
-        
+            worldEditor_paint(window, chunk->data);
 
-        world_simulateChunk(&chunk);
+        world_simulateChunk(chunk);
 
-        world_drawChunk(&chunk, camera);
+        world_drawChunk(chunk, (vec4 *)(player->camera_transform));
 
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
 
+    free(chunk);
+    free(player);
+    
     glfwTerminate();
 
     return 0;

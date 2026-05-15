@@ -7,25 +7,27 @@
 #include <world.h>
 #include <materials.h>
 
-#define cell(x, y) worldData[x + y * CHUNK_WIDTH]
 
-unsigned int vertexArray, shaderProgram, texture;
-int updateOrder[CHUNK_WIDTH * Chunk_HEIGHT];
 
-Chunk world_genChunk()
+unsigned int world_chunkSpriteVAO, shaderProgram;
+unsigned int texture;
+
+
+
+
+int updateOrder[CHUNK_WIDTH * CHUNK_HEIGHT];
+
+Chunk* world_genChunk()
 {
-  Chunk chunk;
+  Chunk* chunk = malloc(sizeof(Chunk));
 
   for (int x = 0; x < CHUNK_WIDTH; x++)
-    for (int y = 0; y < Chunk_HEIGHT; y++)
-      if ((x | y) == 0 || x == CHUNK_WIDTH || y == Chunk_HEIGHT)
-      if (x == 0 || x == CHUNK_WIDTH - 1 || y == 0 || y == Chunk_HEIGHT - 1)
-        chunk.data[x + y * CHUNK_WIDTH] = STONE;
-      else
-        chunk.data[x + y * CHUNK_WIDTH] = AIR;
+    for (int y = 0; y < CHUNK_HEIGHT; y++)
+        chunk->data[x + y * CHUNK_WIDTH] = AIR;
 
   return chunk;
 }
+
 
 void world_init()
 {
@@ -34,8 +36,8 @@ void world_init()
 
   unsigned int vertexBuffer, indexBuffer;
 
-  glGenVertexArrays(1, &vertexArray);
-  glBindVertexArray(vertexArray);
+  glGenVertexArrays(1, &world_chunkSpriteVAO);
+  glBindVertexArray(world_chunkSpriteVAO);
 
   glGenBuffers(1, &vertexBuffer);
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -82,15 +84,15 @@ void world_init()
   free((void *)fragmentShaderSource);
 
   glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glGenerateMipmap(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_3D, texture);
+  glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, CHUNK_WIDTH, CHUNK_HEIGHT, MAX_NUM_CHUNKS, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-  for (int i = 0; i < CHUNK_WIDTH * Chunk_HEIGHT; i++)
+  for (int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT; i++)
     updateOrder[i] = i;
 
-  for (int i = CHUNK_WIDTH * Chunk_HEIGHT - 1; i > 0; i--)
+  for (int i = CHUNK_WIDTH * CHUNK_HEIGHT - 1; i > 0; i--)
   {
     int j = rand() % (i + 1);
     int tmp = updateOrder[i];
@@ -104,20 +106,18 @@ void world_simulateChunk(Chunk *chunk)
   int rx = rand();
   int ry = rand();
 
-  for (int i = 0; i < CHUNK_WIDTH * Chunk_HEIGHT; i++)
+  for (int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT; i++)
   {
     int x = (updateOrder[i] + rx) % CHUNK_WIDTH;
-    int y = ((updateOrder[i] + ry) / CHUNK_WIDTH) % Chunk_HEIGHT;
-    int idx = updateOrder[i];
-    int x = idx % CHUNK_WIDTH;
-    int y = idx / CHUNK_WIDTH;
-    materialMove(x, y,  chunk->data);
+    int y = ((updateOrder[i] + ry) / CHUNK_WIDTH) % CHUNK_HEIGHT;
+    materialMove(x, y, chunk);
   }
 
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, CHUNK_WIDTH, Chunk_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
-  // Use TexSubImage2D for updating existing textures to avoid re-allocation
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, CHUNK_WIDTH, Chunk_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
+  glBindTexture(GL_TEXTURE_3D, texture);
+  // glTexSubImage2D(GL_TEXTURE_3D, 0, 0, 0, CHUNK_WIDTH, CHUNK_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
+
+  glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, CHUNK_WIDTH, CHUNK_HEIGHT, 1, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
+  glGenerateMipmap(GL_TEXTURE_3D);
 };
 
 void world_drawChunk(Chunk *chunk, mat4x4 camera)
@@ -125,10 +125,9 @@ void world_drawChunk(Chunk *chunk, mat4x4 camera)
   glUseProgram(shaderProgram);
   glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "camera"), 1, GL_FALSE, (float *)camera);
 
-  glBindVertexArray(vertexArray);
-  glBindTexture(GL_TEXTURE_2D, texture);
+  glBindVertexArray(world_chunkSpriteVAO);
+  glBindTexture(GL_TEXTURE_3D, texture);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 }
 
-#undef cell

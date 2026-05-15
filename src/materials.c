@@ -43,8 +43,8 @@ void getDxDy(int direction, int *dx, int *dy)
   }
   switchLR = !switchLR;
 }
-#define cell(x, y) chunkData[(x) + (y) * CHUNK_WIDTH]
-void materialMove(int x, int y, unsigned char *chunkData)
+#define cell(x, y) (chunk->data)[(x) + (y) * CHUNK_WIDTH]
+void materialMove(int x, int y, Chunk *chunk)
 {
   Material m = getMaterial(cell(x, y));
   int dx = 0, dy = 0;
@@ -60,7 +60,7 @@ void materialMove(int x, int y, unsigned char *chunkData)
     int ny = y + ty;
 
     // Check bounds and if the target cell is AIR
-    if (nx >= 0 && nx < CHUNK_WIDTH && ny >= 0 && ny < Chunk_HEIGHT)
+    if (nx >= 0 && nx < CHUNK_WIDTH && ny >= 0 && ny < CHUNK_HEIGHT)
     {
       if (cell(nx, ny) == AIR)
       {
