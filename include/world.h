@@ -10,11 +10,16 @@ typedef struct Chunk
 
   unsigned char data[CHUNK_WIDTH * CHUNK_HEIGHT];
 
+  int xpos;
+  int ypos;
+  int loadedID;
 
-  struct Chunk *left;
-  struct Chunk *right;
-  struct Chunk *up;
-  struct Chunk *down;
+  //Indices:
+  // 0 1 2
+  // 3 4 5
+  // 6 7 8
+  struct Chunk *neigbors[9];
+
 
 
 } Chunk;

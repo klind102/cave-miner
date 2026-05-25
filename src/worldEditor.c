@@ -6,8 +6,8 @@
 #include <worldEditor.h>
 #include <world.h>
 
-#define cell(x, y) chunkData[(x) + (y) * CHUNK_WIDTH]
-void worldEditor_paint(GLFWwindow *window, unsigned char *chunkData)
+#define cell(x, y) chunk->data[(x) + (y) * CHUNK_WIDTH]
+void worldEditor_paint(GLFWwindow *window, Chunk* chunk)
 {
 
   double screenX, screenY;

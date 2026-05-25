@@ -19,6 +19,17 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+void APIENTRY glDebugOutput(GLenum source,
+                            GLenum type,
+                            unsigned int id,
+                            GLenum severity,
+                            GLsizei length,
+                            const char *message,
+                            const void *userParam)
+{
+    printf("%s\n", message);
+}
+
 int main(void)
 {
     if (!glfwInit())
@@ -48,12 +59,14 @@ int main(void)
     glViewport(0, 0, 640, 640);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(glDebugOutput, NULL);
 
     utils_init();
 
     world_init();
-
-    Chunk *chunk = world_genChunk();
+    Chunk* c = world_genChunk(0, -1);
+    world_linkChunks(world_rootChunk, c);
 
     Player *player = player_init();
 
@@ -75,17 +88,20 @@ int main(void)
         player_updateCamera(window, player, deltaTime);
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-            worldEditor_paint(window, chunk->data);
+            worldEditor_paint(window, world_rootChunk);
 
-        world_simulateChunk(chunk);
+        world_simulateChunk(world_rootChunk);
+        world_simulateChunk(c);
 
-        world_drawChunk(chunk, (vec4 *)(player->camera_transform));
+        world_drawChunk(world_rootChunk, (vec4 *)(player->camera_transform));
+        world_drawChunk(c, (vec4 *)(player->camera_transform));
 
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
 
-    free(chunk);
+    free(world_rootChunk);
+    free(c);
     free(player);
 
     utils_freeAll();

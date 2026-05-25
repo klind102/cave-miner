@@ -8,27 +8,51 @@
 #include <materials.h>
 #include <utils.h>
 
-
-
 unsigned int shaderProgram;
 unsigned int texture;
 
-
-
-
 int updateOrder[CHUNK_WIDTH * CHUNK_HEIGHT];
+Chunk *world_rootChunk;
+int numLoadedChunks = 0;
 
-Chunk* world_genChunk()
+Chunk *world_genChunk(int x, int y)
 {
-  Chunk* chunk = malloc(sizeof(Chunk));
 
-  for (int x = 0; x < CHUNK_WIDTH; x++)
-    for (int y = 0; y < CHUNK_HEIGHT; y++)
-        chunk->data[x + y * CHUNK_WIDTH] = AIR;
+  if (numLoadedChunks >= MAX_NUM_CHUNKS)
+  {
+    printf("max number of loaded chunks exceded!");
+    return NULL;
+  }
+  Chunk *chunk = malloc(sizeof(Chunk));
 
+  chunk->xpos = x;
+  chunk->ypos = y;
+  chunk->loadedID = numLoadedChunks;
+  for (int i = 0; i < 9; i++)
+    chunk->neigbors[i] = NULL;
+
+  for (int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT; i++)
+    chunk->data[i] = AIR;
+
+  numLoadedChunks++;
   return chunk;
 }
 
+void world_linkChunks(Chunk *c0, Chunk *c1)
+{
+
+  int dx = c1->xpos - c0->xpos;
+  int dy = c1->ypos - c0->ypos;
+
+  if (!(dx || dy) || dx > 1 || dx < -1 || dy > 1 || dy < -1)
+  {
+    printf("Cannot link chunks (invalid offset)\n");
+    return;
+  }
+
+  c0->neigbors[(dx + 1) + (dy + 1) * 3] = c1;
+  c1->neigbors[(-dx + 1) + (-dy + 1) * 3] = c0;
+}
 
 void world_init()
 {
@@ -64,8 +88,8 @@ void world_init()
 
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_3D, texture);
-  glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, CHUNK_WIDTH, CHUNK_HEIGHT, MAX_NUM_CHUNKS, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, CHUNK_WIDTH, CHUNK_HEIGHT, MAX_NUM_CHUNKS, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   for (int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT; i++)
@@ -78,7 +102,9 @@ void world_init()
     updateOrder[i] = updateOrder[j];
     updateOrder[j] = tmp;
   }
-};
+
+  world_rootChunk = world_genChunk(0, 0);
+}
 
 void world_simulateChunk(Chunk *chunk)
 {
@@ -95,14 +121,15 @@ void world_simulateChunk(Chunk *chunk)
   glBindTexture(GL_TEXTURE_3D, texture);
   // glTexSubImage2D(GL_TEXTURE_3D, 0, 0, 0, CHUNK_WIDTH, CHUNK_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
 
-  glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, CHUNK_WIDTH, CHUNK_HEIGHT, 1, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
-  glGenerateMipmap(GL_TEXTURE_3D);
-};
+  glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, chunk->loadedID, CHUNK_WIDTH, CHUNK_HEIGHT, 1, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
+}
 
 void world_drawChunk(Chunk *chunk, mat4x4 camera)
 {
   glUseProgram(shaderProgram);
   glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "camera"), 1, GL_FALSE, (float *)camera);
+  glUniform2f(glGetUniformLocation(shaderProgram, "chunkPos"), 2 * (float)chunk->xpos, 2 * (float)chunk->ypos);
+  glUniform1f(glGetUniformLocation(shaderProgram, "chunkSlice"), (chunk->loadedID + 0.5f) / (float)MAX_NUM_CHUNKS);
 
   glBindVertexArray(UTIL_SPRITE_VAO);
   glBindTexture(GL_TEXTURE_3D, texture);
@@ -110,8 +137,8 @@ void world_drawChunk(Chunk *chunk, mat4x4 camera)
   glBindVertexArray(0);
 }
 
-void world_freeAll(){
+void world_freeAll()
+{
   glDeleteTextures(1, &texture);
   glDeleteProgram(shaderProgram);
 }
-
