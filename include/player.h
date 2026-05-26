@@ -4,6 +4,7 @@
 
 
 #define CAMERA_ZOOM_SPEED 10.0f
+#define CAMERA_MOVE_SPEED 800.0f
 
 typedef struct Player
 {

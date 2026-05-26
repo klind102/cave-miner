@@ -4,33 +4,40 @@
 #define SAND 1
 #define STONE 2
 
+const vec4 COL_AIR = vec4(0.0, 0.0, 0.0, 1.0);
+
+const vec4 COL_SAND_DARK = vec4(0.5, 0.5, 0.0, 1.0);
+const vec4 COL_SAND_LIGHT = vec4(1.0, 1.0, 0.0, 1.0);
+
+const vec4 COL_STONE_DARK = vec4(0.5, 0.5, 0.5, 1.0);
+const vec4 COL_STONE_LIGHT = vec4(0.75, 0.75, 0.75, 1.0);
+
 in vec3 texCoords;
 out vec4 fragColor;
 
 uniform sampler3D tex;
 
-float hash21(uvec2 p) {
-  uint n = p.x + 1920U * p.y + (1920U * 1080U);
+float hash11(uint n) {
+    // integer hash copied from Hugo Elias
   n = (n << 13U) ^ n;
   n = n * (n * n * 15731U + 789221U) + 1376312589U;
   return float(n & uint(0x7fffffffU)) / float(0x7fffffff);
 }
-
 void main() {
 
-
-
-  int material = int(texture(tex, texCoords).r * 255.0);
+  uvec2 texData = uvec2(texture(tex, texCoords) * 255.0);
+  uint material = texData.r;
+  uint variant = texData.g;
 
   switch(material) {
     case AIR:
-      fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+      fragColor = COL_AIR;
       return;
     case SAND:
-      fragColor = mix(vec4(1.0, 1.0, 0.0, 1.0), vec4(0.5, 0.5, 0.0, 1.0), hash21(uvec2(texCoords.xy * textureSize(tex, 0).xy)));
+      fragColor = mix(COL_SAND_DARK, COL_SAND_LIGHT, hash11(variant));
       return;
     case STONE:
-      fragColor = mix(vec4(0.75, 0.75, 0.75, 1.0), vec4(0.5, 0.5, 0.5, 1.0), hash21(uvec2(texCoords.xy * textureSize(tex, 0).xy)));
+      fragColor = mix(COL_STONE_DARK, COL_STONE_LIGHT, hash11(variant));
       return;
     default:
       fragColor = vec4(0.0, 0.0, 0.0, 1.0);

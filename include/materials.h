@@ -15,12 +15,13 @@
 typedef struct _Material
 {
   unsigned char type;
+  unsigned char numVariants;
   int moveOrder[5];
 } Material;
 
 static const Material MATERIAL_LOOKUP[] = {
-    {AIR, {-1}},
-    {SAND, {DOWN, DOWN_DIAG, -1}},
-    {STONE, {-1}}};
+    {AIR, 1, {-1}},
+    {SAND, 255, {DOWN, DOWN_DIAG, -1}},
+    {STONE, 1, {-1}}};
 
 #endif

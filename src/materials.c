@@ -2,14 +2,6 @@
 #include <world.h>
 #include <stdlib.h>
 
-const Material* getMaterial(unsigned char type)
-{
-  if (type >= sizeof(MATERIAL_LOOKUP) / sizeof(Material))
-    return &MATERIAL_LOOKUP[AIR];
-
-  return &MATERIAL_LOOKUP[type];
-}
-
 int switchLR = 1;
 void getDxDy(int direction, int *dx, int *dy)
 {
@@ -46,8 +38,8 @@ void getDxDy(int direction, int *dx, int *dy)
 
 void materialMove(int x, int y, Chunk *current)
 {
-  unsigned char temp = cell(current, x, y);
-  const Material *m = getMaterial(temp);
+  Cell temp = cell(current, x, y);
+  const Material *m = &MATERIAL_LOOKUP[temp.type];
 
   if (m->moveOrder[0] == -1)
     return;
@@ -77,9 +69,9 @@ void materialMove(int x, int y, Chunk *current)
     int lnx = (nx + CHUNK_WIDTH) % CHUNK_WIDTH;
     int lny = (ny + CHUNK_HEIGHT) % CHUNK_HEIGHT;
 
-    if (cell(target, lnx, lny) == AIR)
+    if (cell(target, lnx, lny).type == AIR)
     {
-      cell(current, x, y) = AIR;
+      cell(current, x, y) = cell(target, lnx, lny);
       cell(target, lnx, lny) = temp;
       return; // Successfully moved
     }

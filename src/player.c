@@ -4,9 +4,9 @@
 #include "linmath.h"
 #include <stdlib.h>
 
-Player* player_init()
+Player *player_init()
 {
-  Player* player = malloc(sizeof(Player));
+  Player *player = malloc(sizeof(Player));
   mat4x4_identity(player->camera_transform);
   player->camera_pos[0] = 0.0f;
   player->camera_pos[1] = 0.0f;
@@ -21,17 +21,25 @@ void player_updateCamera(GLFWwindow *window, Player *player, float deltaTime)
   glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
   vec3 input = {
+      glfwGetKey(window, GLFW_KEY_D) - glfwGetKey(window, GLFW_KEY_A),
       glfwGetKey(window, GLFW_KEY_W) - glfwGetKey(window, GLFW_KEY_S),
-      glfwGetKey(window, GLFW_KEY_A) - glfwGetKey(window, GLFW_KEY_D),
       glfwGetKey(window, GLFW_KEY_Q) - glfwGetKey(window, GLFW_KEY_E),
   };
 
+  player->camera_pos[0] += input[0] * CAMERA_MOVE_SPEED * (1.0f / player->camera_zoom) * deltaTime;
+  player->camera_pos[1] += input[1] * CAMERA_MOVE_SPEED * (1.0f / player->camera_zoom) * deltaTime;
   player->camera_zoom += input[2] * CAMERA_ZOOM_SPEED * player->camera_zoom * deltaTime;
+
   if (player->camera_zoom < 0.1f)
     player->camera_zoom = 0.1f;
 
   float boundsX = (windowWidth / 2.0f) / player->camera_zoom;
   float boundsY = (windowHeight / 2.0f) / player->camera_zoom;
 
-  mat4x4_ortho(player->camera_transform, -boundsX, boundsX, -boundsY, boundsY, -0.1f, 100.0f);
+  mat4x4_ortho(player->camera_transform,
+               player->camera_pos[0] - boundsX,
+               player->camera_pos[0] + boundsX,
+               player->camera_pos[1] - boundsY,
+               player->camera_pos[1] + boundsY,
+               -0.1f, 100.0f);
 }

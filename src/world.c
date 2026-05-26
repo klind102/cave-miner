@@ -32,7 +32,7 @@ Chunk *world_genChunk(int x, int y)
     chunk->neigbors[i] = NULL;
 
   for (int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT; i++)
-    chunk->data[i] = AIR;
+    chunk->data[i].type = AIR;
 
   numLoadedChunks++;
   return chunk;
@@ -88,7 +88,7 @@ void world_init()
 
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_3D, texture);
-  glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, CHUNK_WIDTH, CHUNK_HEIGHT, MAX_NUM_CHUNKS, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+  glTexImage3D(GL_TEXTURE_3D, 0, GL_RG8, CHUNK_WIDTH, CHUNK_HEIGHT, MAX_NUM_CHUNKS, 0, GL_RG, GL_UNSIGNED_BYTE, NULL);
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -119,9 +119,8 @@ void world_simulateChunk(Chunk *chunk)
   }
 
   glBindTexture(GL_TEXTURE_3D, texture);
-  // glTexSubImage2D(GL_TEXTURE_3D, 0, 0, 0, CHUNK_WIDTH, CHUNK_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
 
-  glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, chunk->loadedID, CHUNK_WIDTH, CHUNK_HEIGHT, 1, GL_RED, GL_UNSIGNED_BYTE, chunk->data);
+  glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, chunk->loadedID, CHUNK_WIDTH, CHUNK_HEIGHT, 1, GL_RG, GL_UNSIGNED_BYTE, chunk->data);
 }
 
 void world_drawChunk(Chunk *chunk, mat4x4 camera)
