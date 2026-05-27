@@ -90,7 +90,7 @@ int main(void)
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
             worldEditor_paint(window, player->camera_transform, world_rootChunk, &MATERIAL_LOOKUP[SAND]);
         else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-            worldEditor_paint(window, player->camera_transform, c, &MATERIAL_LOOKUP[AIR]);
+            worldEditor_paint(window, player->camera_transform, c, &MATERIAL_LOOKUP[WATER]);
 
         world_simulateChunk(world_rootChunk);
         world_simulateChunk(c);

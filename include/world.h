@@ -1,8 +1,8 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#define CHUNK_WIDTH 256
-#define CHUNK_HEIGHT 256
+#define CHUNK_WIDTH 512
+#define CHUNK_HEIGHT 512
 #define MAX_NUM_CHUNKS 16
 
 #define CHUNK_UP_LEFT 0

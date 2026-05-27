@@ -1,6 +1,7 @@
 #include <materials.h>
 #include <world.h>
 #include <stdlib.h>
+#include <utils.h>
 
 int switchLR = 1;
 void getDxDy(int direction, int *dx, int *dy)
@@ -35,22 +36,23 @@ void getDxDy(int direction, int *dx, int *dy)
   switchLR = !switchLR;
 }
 #define cell(p, x, y) (p->data)[(x) + (y) * CHUNK_WIDTH]
+#define randf() (float)rand() / (float)RAND_MAX
 
 void materialMove(int x, int y, Chunk *current)
 {
   Cell temp = cell(current, x, y);
-  const Material *m = &MATERIAL_LOOKUP[temp.type];
+  const Material *currMat = &MATERIAL_LOOKUP[temp.type];
 
-  if (m->moveOrder[0] == -1)
+  if (currMat->moveOrder[0] == -1)
     return;
 
   for (int i = 0; i < 5; i++)
   {
-    if (m->moveOrder[i] == -1)
+    if (currMat->moveOrder[i] == -1)
       break;
 
     int tx, ty;
-    getDxDy(m->moveOrder[i], &tx, &ty);
+    getDxDy(currMat->moveOrder[i], &tx, &ty);
 
     int nx = x + tx;
     int ny = y + ty;
@@ -69,7 +71,10 @@ void materialMove(int x, int y, Chunk *current)
     int lnx = (nx + CHUNK_WIDTH) % CHUNK_WIDTH;
     int lny = (ny + CHUNK_HEIGHT) % CHUNK_HEIGHT;
 
-    if (cell(target, lnx, lny).type == AIR)
+    const Material *targetMat = &MATERIAL_LOOKUP[cell(target, lnx, lny).type];
+
+
+    if (currMat->density > targetMat->density && randf() > (targetMat->density / currMat->density))
     {
       cell(current, x, y) = cell(target, lnx, lny);
       cell(target, lnx, lny) = temp;
