@@ -6,6 +6,7 @@
 
 #include "world.h"
 #include "worldEditor.h"
+#include "materials.h"
 
 // Unified Build Includes
 #include "player.c"
@@ -62,9 +63,13 @@ int main(void)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(glDebugOutput, NULL);
 
-    utils_init();
+    INIT_REACTIONS();
 
+    utils_init();
     world_init();
+    
+
+
     Chunk *c = world_genChunk(0, -1);
     world_linkChunks(world_rootChunk, c);
 
@@ -88,9 +93,9 @@ int main(void)
         player_updateCamera(window, player, deltaTime);
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-            worldEditor_paint(window, player->camera_transform, world_rootChunk, &MATERIAL_LOOKUP[SAND]);
+            worldEditor_paint(window, player->camera_transform, world_rootChunk, &MATERIAL_LOOKUP[FIRE]);
         else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-            worldEditor_paint(window, player->camera_transform, c, &MATERIAL_LOOKUP[WATER]);
+            worldEditor_paint(window, player->camera_transform, c, &MATERIAL_LOOKUP[LAVA]);
 
         world_simulateChunk(world_rootChunk);
         world_simulateChunk(c);
@@ -105,7 +110,6 @@ int main(void)
     free(world_rootChunk);
     free(c);
     free(player);
-
     utils_freeAll();
 
     world_freeAll();

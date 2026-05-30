@@ -4,6 +4,10 @@
 #define SAND 1
 #define STONE 2
 #define WATER 3
+#define LAVA 4
+#define STEAM 5
+#define FIRE 6
+#define SMOKE 7
 
 const vec4 COL_AIR = vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -14,6 +18,16 @@ const vec4 COL_STONE_DARK = vec4(0.5, 0.5, 0.5, 1.0);
 const vec4 COL_STONE_LIGHT = vec4(0.75, 0.75, 0.75, 1.0);
 
 const vec4 COL_WATER = vec4(0.1, 0.4, 0.6, 1.0);
+
+const vec4 COL_LAVA = vec4(0.8, 0.6, 0.0, 1.0);
+
+const vec4 COL_STEAM = vec4(0.9, 0.9, 0.9, 1.0);
+
+const vec4 COL_FIRE_DARK = vec4(1.0, 0.3, 0.0, 1.0);
+const vec4 COL_FIRE_LIGHT = vec4(1.0, 1.0, 0.0, 1.0);
+
+const vec4 COL_SMOKE = vec4(0.3, 0.3, 0.3, 1.0);
+
 
 in vec3 texCoords;
 out vec4 fragColor;
@@ -44,6 +58,18 @@ void main() {
       return;
       case WATER:
       fragColor = COL_WATER;
+      return;
+      case LAVA:
+      fragColor = COL_LAVA;
+      return;
+      case STEAM:
+      fragColor = COL_STEAM;
+      return;
+      case FIRE:
+      fragColor = mix(COL_FIRE_DARK, COL_FIRE_LIGHT, hash11(variant));
+      return;
+      case SMOKE:
+      fragColor = COL_SMOKE;
       return;
     default:
       fragColor = vec4(0.0, 0.0, 0.0, 1.0);

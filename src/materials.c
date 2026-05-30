@@ -17,23 +17,20 @@ void getDxDy(int direction, int *dx, int *dy)
     *dy = -1;
     break;
   case LEFT_RIGHT:
-    *dx = switchLR ? -1 : 1;
+    *dx = (rand() % 2) ? -1 : 1;
     *dy = 0;
     break;
   case UP_DIAG:
-    *dx = switchLR ? -1 : 1;
     *dx = (rand() % 2) ? -1 : 1;
     *dy = 1;
     break;
   case DOWN_DIAG:
-    *dx = switchLR ? -1 : 1;
-
+    *dx = (rand() % 2) ? -1 : 1;
     *dy = -1;
     break;
   default:
     break;
   }
-  switchLR = !switchLR;
 }
 #define cell(p, x, y) (p->data)[(x) + (y) * CHUNK_WIDTH]
 #define randf() (float)rand() / (float)RAND_MAX
@@ -71,12 +68,29 @@ void materialMove(int x, int y, Chunk *current)
     int lnx = (nx + CHUNK_WIDTH) % CHUNK_WIDTH;
     int lny = (ny + CHUNK_HEIGHT) % CHUNK_HEIGHT;
 
-    const Material *targetMat = &MATERIAL_LOOKUP[cell(target, lnx, lny).type];
+    Cell targetCell = cell(target, lnx, lny);
+    const Material *targetMat = &MATERIAL_LOOKUP[targetCell.type];
 
+    const Reaction *ctReaction = &REACTIONS_LOOKUP[currMat->type][targetMat->type];
+    if (ctReaction->result != UNKNOWN && randf() < ctReaction->chance)
+    {
+      cell(current, x, y).type = ctReaction->result;
+      cell(current, x, y).variant = rand() % (MATERIAL_LOOKUP[(int)ctReaction->result].numVariants);
+      return;
+    }
+
+    const Reaction *tcReaction = &REACTIONS_LOOKUP[targetMat->type][currMat->type];
+    if (tcReaction->result != UNKNOWN && randf() < tcReaction->chance)
+    {
+      targetCell.type = tcReaction->result;
+      targetCell.variant = rand() % (MATERIAL_LOOKUP[(int)tcReaction->result].numVariants);
+      cell(target, lnx, lny) = targetCell;
+      return;
+    }
 
     if (currMat->density > targetMat->density && randf() > (targetMat->density / currMat->density))
     {
-      cell(current, x, y) = cell(target, lnx, lny);
+      cell(current, x, y) = targetCell;
       cell(target, lnx, lny) = temp;
       return; // Successfully moved
     }
